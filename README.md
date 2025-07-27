@@ -29,7 +29,7 @@ pip install pipenv
 ### Clone the repository:
 
 ```bash
-git clone https://github.com/abhik4004/GIS-AI.git
+git clone [https://github.com/abhik4004/GIS-AI.git](https://github.com/Abhik4004/GIS-Langchain.git)
 cd GIS-AI
 ```
 
