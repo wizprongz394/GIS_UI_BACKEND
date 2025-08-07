@@ -9,6 +9,8 @@ langchain-ollama = "*"
 black = "*"
 langchain-community = "*"
 faiss-cpu = "*"
+streamlit = "*"
+geopy = "*"
 
 [dev-packages]
 

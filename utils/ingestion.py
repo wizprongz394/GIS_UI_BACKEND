@@ -31,7 +31,7 @@ def run_llm():
         combine_docs_chain
     )
 
-    res = retrieval_chain.invoke({"input": "Give me summary of the land as well as a workflow to follow on it"})
+    res = retrieval_chain.invoke({"input": "Give me summary of the land"})
     print(res["answer"])
 
 
