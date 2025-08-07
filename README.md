@@ -1,4 +1,4 @@
-# 🚫 Code Contribution Policy#
+# 🚫 Code Contribution Policy
 
 ## 🔒 ChatGPT-Generated Code Strictly Prohibited
 
