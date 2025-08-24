@@ -3,9 +3,15 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
+from fastapi import File, UploadFile
+import json
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+
+# NEW: MongoDB imports
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 
 # Secret key (keep safe in env variable in real projects)
 SECRET_KEY = "supersecretkey"
@@ -26,7 +32,7 @@ app.add_middleware(
 # Password hasher
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# ---- Database setup ----
+# ---- SQLite User Database Setup ----
 def init_db():
     conn = sqlite3.connect("users.db")
     cur = conn.cursor()
@@ -51,12 +57,26 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+# ---- NEW: Mongo Models ----
+class QueryLog(BaseModel):
+    user: str
+    query: str
+    response: str
+    location: str | None = None
+    timestamp: datetime = datetime.utcnow()
+
 # Create JWT token
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# ---- NEW: MongoDB Connection ----
+MONGO_URI = "mongodb://localhost:27017"
+client = AsyncIOMotorClient(MONGO_URI)
+db = client["memory_db"]  # database
+conversations = db["conversations"]  # collection
 
 # ---- Routes ----
 @app.get("/")
@@ -118,3 +138,86 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Token expired or invalid")
 
     return {"username": username}
+
+# ---------------- NEW: Save Query/Response ----------------
+@app.post("/save_query")
+async def save_query(log: QueryLog):
+    doc = log.dict()
+    result = await conversations.insert_one(doc)
+    return {"message": "Query saved", "id": str(result.inserted_id)}
+
+# ---------------- NEW: Get User History ----------------
+@app.get("/history/{username}")
+async def get_history(username: str):
+    cursor = conversations.find({"user": username}).sort("timestamp", -1)
+    history = []
+    async for doc in cursor:
+        doc["_id"] = str(doc["_id"])
+        history.append(doc)
+    return {"history": history}
+
+# --- Location collection ---
+location_collection = db["user_locations"]
+
+# Upload JSON file containing user location
+@app.post("/upload_location")
+async def upload_location(request: Request, file: UploadFile = File(...)):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing token")
+    token = auth_header.split(" ")[1]
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    username = payload.get("sub")
+
+    contents = await file.read()
+    try:
+        location_data = json.loads(contents)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+
+    # Save/replace user’s location
+    location_collection.update_one(
+        {"user": username},
+        {"$set": {"location": location_data}},
+        upsert=True
+    )
+    return {"message": "Location uploaded", "location": location_data}
+# ---------------- CHAT ENDPOINT ----------------
+@app.post("/chat")
+async def chat(user_query: dict, request: Request):
+    # --- Verify JWT ---
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing token")
+    try:
+        token = auth_header.split(" ")[1]
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token expired or invalid")
+
+    # --- Get stored location ---
+    user_location = await location_collection.find_one(
+        {"user": username}, {"_id": 0, "location": 1}
+    )
+    location = user_location["location"] if user_location else {}
+
+    # --- Dummy response (replace later with LLM) ---
+    dummy_response = f"This is a placeholder answer for: {user_query['query']}"
+
+    # --- Save chat into Mongo ---
+    doc = {
+        "user": username,
+        "query": user_query["query"],
+        "response": dummy_response,
+        "location": location,
+        "timestamp": datetime.utcnow()
+    }
+    await conversations.insert_one(doc)
+
+    return {
+        "message": "Query saved",
+        "query": user_query["query"],
+        "response": dummy_response,
+        "location": location
+    }
