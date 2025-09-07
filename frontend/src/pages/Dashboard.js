@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+  const [loadingLand, setLoadingLand] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -22,6 +24,10 @@ export default function Dashboard() {
         localStorage.removeItem("token");
         window.location.href = "/login";
       });
+
+    // Simulated data loads (later replaced by API calls)
+    setTimeout(() => setLoadingWeather(false), 1200);
+    setTimeout(() => setLoadingLand(false), 1500);
   }, []);
 
   const handleLogout = () => {
@@ -32,25 +38,55 @@ export default function Dashboard() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>Welcome, {user} 🎉</h2>
+        <h2 style={styles.title}>Welcome, {user} 👋</h2>
         <p style={styles.subtitle}>Your personalized GIS + AI dashboard</p>
 
-        {/* Features Section */}
+        {/* Feature cards row */}
         <div style={styles.featuresRow}>
+          {/* Weather Data Section */}
           <div style={styles.featureCard}>
-            <h3>🗺️ GIS Data</h3>
-            <p>Integration with spatial datasets.</p>
-            <span style={styles.badge}>Coming Soon</span>
+            <h3 style={styles.sectionTitle}>🌦 Weather Data</h3>
+            {loadingWeather ? (
+              <p style={styles.loading}>Fetching latest weather...</p>
+            ) : (
+              <>
+                <p style={styles.sectionText}>
+                  Current preview: <b>25°C</b>, partly cloudy with light winds.
+                </p>
+                <span style={styles.badge}>Live</span>
+                <p style={styles.meta}>Updated: just now</p>
+                <button
+                  style={styles.linkBtn}
+                  onClick={() => (window.location.href = "/analyze/weather")}
+                >
+                  Analyze →
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Land Data Section */}
           <div style={styles.featureCard}>
-            <h3>🤖 AI Queries</h3>
-            <p>Ask questions and get insights powered by AI.</p>
-            <span style={styles.badge}>Coming Soon</span>
-          </div>
-          <div style={styles.featureCard}>
-            <h3>📍 Interactive Maps</h3>
-            <p>Visualize and explore geospatial data.</p>
-            <span style={styles.badge}>Coming Soon</span>
+            <h3 style={styles.sectionTitle}>🌍 Land Data</h3>
+            {loadingLand ? (
+              <p style={styles.loading}>Loading land analysis...</p>
+            ) : (
+              <>
+                <p style={styles.sectionText}>
+                  Quick insight: <b>Area stable</b>, low flood risk (demo data).
+                </p>
+                <span style={{ ...styles.badge, background: "#caffbf" }}>
+                  Ready
+                </span>
+                <p style={styles.meta}>Updated: just now</p>
+                <button
+                  style={styles.linkBtn}
+                  onClick={() => (window.location.href = "/analyze/land")}
+                >
+                  Analyze →
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -90,21 +126,31 @@ const styles = {
     marginBottom: "30px",
   },
   featuresRow: {
-    display: "flex",
-    justifyContent: "space-between",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
     gap: "20px",
-    flexWrap: "wrap",
     marginBottom: "30px",
   },
   featureCard: {
-    flex: "1",
-    minWidth: "250px",
     background: "#fafafa",
     borderRadius: "12px",
     padding: "20px",
     boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
     textAlign: "center",
-    transition: "transform 0.3s ease",
+    transition: "transform 0.25s ease",
+  },
+  featureCardHover: {
+    transform: "scale(1.02)",
+  },
+  sectionTitle: {
+    fontSize: "1.25rem",
+    fontWeight: "600",
+    marginBottom: "10px",
+    color: "#333",
+  },
+  sectionText: {
+    color: "#555",
+    marginBottom: "10px",
   },
   badge: {
     display: "inline-block",
@@ -115,6 +161,25 @@ const styles = {
     fontSize: "0.8rem",
     fontWeight: "bold",
     color: "#333",
+  },
+  meta: {
+    fontSize: "0.75rem",
+    color: "#888",
+    marginTop: "8px",
+  },
+  loading: {
+    color: "#999",
+    fontStyle: "italic",
+  },
+  linkBtn: {
+    marginTop: "12px",
+    padding: "10px 16px",
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    background: "#fff",
+    cursor: "pointer",
+    fontWeight: 600,
+    transition: "0.3s",
   },
   logoutBtn: {
     marginTop: "10px",

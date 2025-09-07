@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import WeatherAnalyze from "./pages/WeatherAnalyze";
+import LandAnalyze from "./pages/LandAnalyze";
 
 
 function App() {
@@ -11,7 +13,7 @@ function App() {
     <Router>
       <div style={styles.container}>
         <header style={styles.header}>
-          <h1 style={styles.logo}>🌍 GIS Langchain</h1>
+          <h1 style={styles.logo}>GIS Langchain</h1>
           <nav style={styles.nav}>
             <Link to="/signup" style={styles.navLink}>
               Signup
@@ -27,6 +29,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analyze/weather" element={<WeatherAnalyze />} />
+            <Route path="/analyze/land" element={<LandAnalyze />} />
           </Routes>
         </main>
       </div>
