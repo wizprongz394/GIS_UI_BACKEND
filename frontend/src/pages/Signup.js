@@ -15,12 +15,12 @@ export default function Signup() {
       });
       const data = await res.json();
       if (res.ok) {
-        setMsg("✅ Signup successful! You can now login.");
+        setMsg("Signup successful! You can now login.");
       } else {
-        setMsg("❌ " + (data.detail || "Error"));
+        setMsg(data.detail || "Error");
       }
     } catch (err) {
-      setMsg("⚠️ Server error");
+      setMsg("Server error");
     }
   };
 
@@ -30,20 +30,23 @@ export default function Signup() {
         <h2 style={styles.title}>Create Account</h2>
         <form onSubmit={handleSignup} style={styles.form}>
           <input
+            style={styles.input}
+            type="text"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={styles.input}
+            required
           />
           <input
+            style={styles.input}
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
+            required
           />
           <button type="submit" style={styles.button}>
-            Sign up
+            SIGN UP
           </button>
         </form>
         <p style={styles.message}>{msg}</p>
@@ -58,20 +61,22 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     minHeight: "80vh",
+    backgroundColor: "#013220", // Dark green background
   },
   card: {
-    background: "#fff",
+    background: "#013220", // Match background for uniformity
     padding: "40px",
-    borderRadius: "15px",
+    borderRadius: "20px",
     maxWidth: "400px",
     width: "100%",
     textAlign: "center",
-    boxShadow: "0 6px 16px rgba(0,0,0,0.1)",
+    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.2)",
   },
   title: {
-    marginBottom: "20px",
-    fontSize: "1.8rem",
-    color: "#333",
+    marginBottom: "40px",
+    fontSize: "2.5rem",
+    color: "#cbe22b", // Lime green title
+    fontWeight: "bold",
   },
   form: {
     display: "flex",
@@ -79,27 +84,29 @@ const styles = {
   },
   input: {
     margin: "10px 0",
-    padding: "12px",
-    borderRadius: "10px",
-    border: "1px solid #ddd",
-    fontSize: "1rem",
+    padding: "15px",
+    borderRadius: "30px",
+    border: "1px solid #cbe22b",
+    fontSize: "1.1rem",
     outline: "none",
+    backgroundColor: "#f1f1f1",
     transition: "0.2s",
   },
   button: {
-    marginTop: "15px",
-    padding: "12px",
-    borderRadius: "10px",
+    marginTop: "25px",
+    padding: "15px",
+    borderRadius: "30px",
     border: "none",
-    fontSize: "1rem",
-    backgroundColor: "#8eecf5",
+    fontSize: "1.2rem",
+    backgroundColor: "#cbe22b",
+    color: "#013220",
     cursor: "pointer",
     fontWeight: "bold",
-    transition: "0.3s",
+    transition: "transform 0.2s, background-color 0.3s",
   },
   message: {
-    marginTop: "15px",
-    fontSize: "0.9rem",
-    color: "#444",
+    marginTop: "20px",
+    fontSize: "1rem",
+    color: "#cbe22b",
   },
 };
